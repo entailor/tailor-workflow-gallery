@@ -1,4 +1,4 @@
-from pytailor import PythonTask, BranchTask, DAG, Inputs, Outputs, Files
+from pytailor import PythonTask, BranchTask, DAG, Inputs, Outputs, Files, Project, FileSet, Workflow
 import orcapack
 
 inputs = Inputs()
@@ -35,8 +35,6 @@ with DAG(name="Advanced orcaflex simulation dag") as dag:
             )
 
 ### run workflow ###
-
-from pytailor import Project, FileSet, Workflow
 
 # open a project
 prj = Project.from_name("Test")
@@ -82,5 +80,8 @@ wf = Workflow(project=prj,
               fileset=fileset)
 
 # run the workflow
-# wf.run(distributed=True)
-wf.run(distributed=True)
+wf.run(distributed=True, worker_name='bernt')
+
+# optional: download h5 files when workflow is finished
+
+# wf.fileset.download(use_storage_dirs=False)
