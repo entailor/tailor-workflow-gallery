@@ -29,7 +29,7 @@ and test that it works by importing in python
 import OrcFxAPI
 ```
 
-# running the workflow
+## running the workflow
 
 First run the file run_orcaflex_in_parallel.py. 
 This sets up and adds the workflow to your project.
