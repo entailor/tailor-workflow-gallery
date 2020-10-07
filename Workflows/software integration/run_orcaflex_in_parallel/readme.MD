@@ -28,18 +28,3 @@ and test that it works by importing in python
 ```
 import OrcFxAPI
 ```
-
-
-
-## Contribute
-
-
-```
-poetry install
-```
-
-## Run tests
-
-To run the tests:
-```
-```
