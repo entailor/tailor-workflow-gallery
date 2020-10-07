@@ -58,6 +58,9 @@ workflow_inputs = {
             "Object name": "Catenary Hose",
             "Object extra": 0,
             "Result names": [
+                "X",
+                "Y",
+                "Z",
                 "Effective tension",
                 "x bend moment",
                 "y bend moment"
