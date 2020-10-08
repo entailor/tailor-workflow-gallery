@@ -1,26 +1,24 @@
-from typing import List
+from pyreportlib.utils import excel_to_latex
 import pandas as pd
-import numpy as np
-import OrcFxAPI as of
+import matplotlib.pyplot as plt
 from pyreportlib import make_latex_document
 
 
-def make_tables(res_files: List[str], post_proc_data: List[dict]):
-    for post_proc_def in post_proc_data:
-        for result_name in post_proc_def['Result names']:
-            with pd.ExcelWriter(f'{result_name}.xlsx') as writer:
-                for hs, res_file in zip([4, 5, 6, 7, 8], res_files):
-                    model = of.Model(res_file)
-                    obj = model[post_proc_def['Object name']]
-                    z = obj.RangeGraph('Z')
-                    x = obj.RangeGraph('X')
-                    y = obj.RangeGraph('Y')
-                    r = np.sqrt(y.Mean ** 2 + x.Mean ** 2)
-                    data = obj.RangeGraph(result_name)
-                    df = pd.DataFrame(index=r, columns=['Z', result_name], data=np.array([z.Max, data.Max[:-1]]).T)
-                    df = df.rename_axis(index='R')
-                    df.to_excel(writer, sheet_name=f'Hs {int(hs)}')
+def make_plots(excel_files):
+    for excel_file in excel_files:
+        plt.figure()
+        df = pd.read_excel(excel_file, None)
+        for sheet_name in df.keys():
+            plt.fill_between(df[sheet_name].index,
+                             df[sheet_name]['maxZ'],
+                             df[sheet_name]['minZ'], color='#D3D3D3', alpha=0.5)
+            plt.scatter(df[sheet_name].index, df[sheet_name]['meanZ'],
+                        c=df[sheet_name][excel_file], cmap='jet', alpha=0.5)
 
+
+def make_tables(excel_files):
+    content = [{'title': 'Test',
+                'content': excel_to_latex(testfile, header=header, index_col=0)}]
 
 def make_content(plot_files, table_files, report_data):
     report_data["content"] = [
