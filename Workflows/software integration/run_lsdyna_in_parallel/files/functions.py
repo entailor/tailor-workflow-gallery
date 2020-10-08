@@ -202,6 +202,9 @@ def did_I_hit(*args,**kwargs):
     import matplotlib.pyplot as plt
     import numpy as np
     from .functions import readrcforc, readnodout
+    from subprocess import Popen, call
+    import glob
+
 
     rcforc = readrcforc('rcforc')
     nodout = readnodout('nodout')
@@ -217,11 +220,14 @@ def did_I_hit(*args,**kwargs):
                  list(nodout[:, 0, 2]),
                  list(nodout[:, 0, 3] + n1_init[1]),
                  list(nodout[:, 0, 4] + n1_init[2])]
+
+
     trigger = np.count_nonzero(rcforc[2,-1,:]) + np.count_nonzero(rcforc[1,-1,:])
 
-    if trigger> 5:
+    if trigger > 1:
         print(f'Yay, you hit with a maximum force of {np.max(rcforc[2,-1,:]):.1f} N!')
 
+        # Create a figure with the trajectory
         plt.figure(figsize=(10,4))
         plt.plot(nodehist[1], nodehist[3])
         plt.plot(1+cup[:,0], cup[:,1], color = 'black')
@@ -232,6 +238,39 @@ def did_I_hit(*args,**kwargs):
         plt.ylabel('Vertical [m]')
         plt.axis('equal')
         plt.savefig('Trajectory.png')
+
+        # Get screen dumps from the simulation
+
+
+        contactstepsOutside = np.nonzero(rcforc[1,-1,:])
+        contactstepsInside  = np.nonzero(rcforc[2, -1, :])
+        temp = []
+        if len(contactstepsOutside[0])>0:
+            temp.extend(list(contactstepsOutside[0]))
+        if len(contactstepsInside[0])>0:
+            temp.extend(list(contactstepsInside[0]))
+
+        if len(temp)>0:
+            temp = np.sort(np.array(temp))
+        else:
+            temp=[0.]
+
+        steps = np.linspace(0,temp[0]/2.,4).astype(int) # Add a few steps leading up to impact
+        if len(contactstepsInside[0])>0: # Add last contact step inside cup
+            steps.append(contactstepsInside[0][-1])
+
+        f = open('inp_plot.cfile', 'w')
+        f.write('open d3plot "d3plot"\n')
+        f.write('ac\n')
+        f.write('quat 0.576596 -0.125669 -0.185182 0.785782;\n')
+        f.write('pan -0.002301 0.012653;\n')
+        f.write('zoom 0.451711;\n')
+        for i, step in enumerate(steps):
+            f.write(f'state {step:d};\n')
+            f.write(f'print png "image_{str(i).zfill(3):s}.png" enlisted "OGL1x1" \n')
+        f.close()
+        call(f'"C:\Program Files\LSTC\LS-PrePost 4.8\lsprepost4.8_x64.exe" c=inp_plot.cfile -nographics', shell=True)
+
     else:
         print('Sorry, no hit, try again')
 
