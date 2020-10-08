@@ -18,7 +18,7 @@ inputs = {
             'populate' : { # All items to be populated in the file. key = function name in LSwrite. Value = input to function
                     'include' : {'files' : [['beerpong_v2.key', 'inp_output.key', 'inp_control.key']]
                     },
-                    'controlTermination' : {'endtime' : 2.00,
+                    'controlTermination' : {'endtime' : endtime,
                     },
                     'termination_node' : {'nID' : [[1,1,1]],
                                           'stop' : [[1,2,3]],
