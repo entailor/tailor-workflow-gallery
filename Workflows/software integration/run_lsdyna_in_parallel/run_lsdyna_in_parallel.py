@@ -6,8 +6,8 @@ from files.functions import populate_runfiles, rundyna, did_I_hit, makeplot
 
 
 vel = 3.1 # Velocity in m/s
-angles = np.linspace(5,70,40)
-# angles = [50]
+# angles = np.linspace(5,70,40); endtime = 2.0
+angles = [50]; endtime = 0.02
 
 inputs = {
         'wf_run_name' : 'Branch duplicate LS-DYNA',
@@ -123,7 +123,7 @@ fileset.upload(LSDYNA_inputfiles = glob.glob('files/*.k*'),
 wf = Workflow(project=prj, dag=dag, fileset=fileset, name='runDyna')
 
 # run the workflow
-wf_run = wf.run(worker_name='Martin')
+wf_run = wf.run(worker_name='martin')
 
 # check the status of the workflow run
 print(wf_run)
