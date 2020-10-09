@@ -1,15 +1,15 @@
 import glob
 import numpy as np
-from pytailor import PythonTask, BranchTask, DAG, Workflow, Project, FileSet, Files, Outputs
+from pytailor import PythonTask, BranchTask, DAG, Workflow, Project, FileSet, Files, Outputs, Inputs
 from files.functions import populate_runfiles, rundyna, did_I_hit, makeplot
 
 
 
 vel = 3.1 # Velocity in m/s
-# angles = np.linspace(5,70,40); endtime = 2.0
-angles = [50]; endtime = 0.02
+angles = np.linspace(5,70,10); endtime = 0.02
+# angles = [50]; endtime = 0.02
 
-inputs = {
+wf_inputs = {
         'wf_run_name' : 'Branch duplicate LS-DYNA',
         'populate_dyna' : {
             # 'input_master' : 'inp_master_duplicate.key',  # File name of file with basic setup (parameters not to be duplicated).
@@ -39,6 +39,7 @@ inputs = {
                                     'o1': [[9.81, 9.81]],
                     },
             },
+            'misc' : {'angles' : list(angles), 'speed' : vel},
         },
         'rundyna' : {
               'runparams' :{ # All parameters required to run LS-DYNA in the appropriate manner
@@ -55,7 +56,7 @@ inputs = {
 
 
 
-
+inputs = Inputs()
 files = Files()
 outputs = Outputs()
 
@@ -64,7 +65,7 @@ with DAG(name="dag") as dag:
     task0 = PythonTask(
         function=populate_runfiles,
         name='populate_runfiles',
-        kwargs = inputs,
+        kwargs = inputs.populate_dyna,
         upload = {files.LSDYNA_runfiles: '*run*.k*'},
         download = [files.functions],
         use_storage_dirs=False,
@@ -79,7 +80,7 @@ with DAG(name="dag") as dag:
                 function= rundyna,
                 name='run LS-DYNA sim',
                 args = files.LSDYNA_runfiles,
-                kwargs=inputs,
+                kwargs=inputs.rundyna,
                 download=[files.LSDYNA_inputfiles, files.LSDYNA_runfiles, files.functions],
                 upload={files.LSDYNA_outputfiles: ['*']},
                 use_storage_dirs=False,
@@ -87,13 +88,13 @@ with DAG(name="dag") as dag:
             task2 = PythonTask(
                 function=did_I_hit,
                 name='postproc',
-                kwargs=inputs,
+                # kwargs=inputs,
                 download=[files.LSDYNA_inputfiles,
                           files.LSDYNA_runfiles,
                           files.LSDYNA_outputfiles,
                           files.functions,
                           files.cfile],
-                upload={files.LSDYNA_postfiles: '*.png'},
+                upload={files.LSDYNA_postfiles : ['*.png']},
                 output_extraction = {outputs.timehist : "<% $[0] %>", outputs.trigger : "<% $[1] %>"},
                 use_storage_dirs=False,
                 parents = task1,
@@ -102,7 +103,7 @@ with DAG(name="dag") as dag:
         function=makeplot,
         name='plot',
         args=[outputs.timehist, outputs.trigger],
-        kwargs = inputs,
+        # kwargs = inputs,
         download = [files.functions],
         use_storage_dirs=False,
         parents = branch,
@@ -120,10 +121,10 @@ fileset.upload(LSDYNA_inputfiles = glob.glob('files/*.k*'),
                cfile = glob.glob('files/*.cfile') )
 
 # create a workflow:
-wf = Workflow(project=prj, dag=dag, fileset=fileset, name='runDyna')
+wf = Workflow(project=prj, dag=dag, fileset=fileset, name='runDyna', inputs = wf_inputs)
 
 # run the workflow
-wf_run = wf.run(worker_name='martin')
+wf_run = wf.run()
 
 # check the status of the workflow run
 print(wf_run)

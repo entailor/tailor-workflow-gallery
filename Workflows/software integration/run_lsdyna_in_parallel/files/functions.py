@@ -238,6 +238,7 @@ def did_I_hit(*args,**kwargs):
         plt.ylabel('Vertical [m]')
         plt.axis('equal')
         plt.savefig('Trajectory.png')
+        plt.close()
 
         # Get screen dumps from the simulation
 
@@ -255,7 +256,7 @@ def did_I_hit(*args,**kwargs):
         else:
             temp=[0.]
 
-        steps = np.linspace(0,temp[0]/2.,4).astype(int) # Add a few steps leading up to impact
+        steps = list(np.linspace(0,temp[0]/2.,4).astype(int)) # Add a few steps leading up to impact
         if len(contactstepsInside[0])>0: # Add last contact step inside cup
             steps.append(contactstepsInside[0][-1])
 
@@ -282,7 +283,6 @@ def makeplot(timehist, trigger, *args,**kwargs):
     import numpy as np
 
     keys = timehist.keys()
-    n1_init = [-0.9993365, 0.0, 0.2729799]
     cup = np.array([[.763, 0.1],
                     [0.772, 0.],
                     [0.841, 0.],
@@ -307,6 +307,7 @@ def makeplot(timehist, trigger, *args,**kwargs):
     plt.legend()
     plt.axis('equal')
     plt.savefig('allTrajectories2D.png')
+    plt.close()
     return
 
 
@@ -330,10 +331,12 @@ def rundyna(inputfile = '', **kwargs):
     import subprocess
     import glob
 
-    dyna_config = kwargs.get('rundyna')
-    runparams = dyna_config.get('runparams')
+    print(f'Starting LS-DYNA simulation with {inputfile}')
+
+    # dyna_config = kwargs.get('rundyna')
+    runparams = kwargs.get('runparams')
     if inputfile == '': # If not given as args, find in kwargs
-        inputfile = dyna_config.get('inpfile','foundnone')
+        inputfile = kwargs.get('inpfile','foundnone')
     if 'foundnone' in inputfile: # Then no input file is given, check if a run file is present in the folder (from populate)
         keyfiles = glob.glob('*run*.k*')
         if len(keyfiles)==1:
@@ -341,7 +344,7 @@ def rundyna(inputfile = '', **kwargs):
         else:
             raise Exception('Did not find master input file for LS-DYNA simulation')
 
-    solveargs = [dyna_config.get('solver')] + [f'i={inputfile}'] + [f'{k}={v}' for k,v in runparams.items()]
+    solveargs = [kwargs.get('solver')] + [f'i={inputfile}'] + [f'{k}={v}' for k,v in runparams.items()]
     out = subprocess.check_output(solveargs)
     fo = open('console_printout.txt', "w")
     fo.write(out.decode("utf-8"))
@@ -359,9 +362,9 @@ def populate_runfiles(**kwargs):
     from .functions import include, controlTermination, termination_node, defineCurve, initialVelocity, loadBodyZ
 
 
-    dyna_config = kwargs.get('populate_dyna')
-    inpMaster = dyna_config.get('input_master','')
-    populate = dyna_config.get('populate')
+
+    inpMaster = kwargs.get('input_master','')
+    populate = kwargs.get('populate')
 
     if inpMaster == '': # If no master files is given, start with clean sheets
         orglines = ['*KEYWORD \n']
@@ -382,7 +385,7 @@ def populate_runfiles(**kwargs):
 
     outfiles = []
     for j in range(0,max(listlengths)):
-        outfile = f'inp_Master_run{j:04d}.key'
+        outfile = f'inp_Master_run{j:03d}.key'
         outfiles.append(outfile)
 
         fo = open(outfile, 'w')
