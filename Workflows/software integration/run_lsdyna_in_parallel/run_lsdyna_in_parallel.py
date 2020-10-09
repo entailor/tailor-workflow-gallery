@@ -6,8 +6,10 @@ from files.functions import populate_runfiles, rundyna, did_I_hit, makeplot
 
 
 vel = 3.1 # Velocity in m/s
-angles = np.linspace(5,70,10); endtime = 0.02
+angles = np.linspace(51,70,3); endtime = 2.00
 # angles = [50]; endtime = 0.02
+
+# 24, 25,
 
 wf_inputs = {
         'wf_run_name' : 'Branch duplicate LS-DYNA',

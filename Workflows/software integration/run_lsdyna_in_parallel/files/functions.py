@@ -385,7 +385,7 @@ def populate_runfiles(**kwargs):
 
     outfiles = []
     for j in range(0,max(listlengths)):
-        outfile = f'inp_Master_run{j:03d}.key'
+        outfile = f'inp_Master_run{j:d}.key'
         outfiles.append(outfile)
 
         fo = open(outfile, 'w')
