@@ -26,3 +26,7 @@ tailor worker
 ```
 
 Now you can go to www.tailor.wf, log in and monitor the workflow progress.
+
+## reporting the results
+
+In the file run_lsdyna_in_parallel.py, un-comment the last line and run that line
