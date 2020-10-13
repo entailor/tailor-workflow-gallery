@@ -4,7 +4,6 @@ import numpy as np
 import dynapack.LSwrite as LSw
 from fnmatch import filter as fltr
 
-from dynapack.LSpost import readrcforc, readnodout
 import matplotlib.pyplot as plt
 
 
@@ -201,7 +200,7 @@ def readnodout( Inputfilename, stringname = ''):
 def did_I_hit(*args,**kwargs):
     import matplotlib.pyplot as plt
     import numpy as np
-    from .functions import readrcforc, readnodout
+    from functions import readrcforc, readnodout
     from subprocess import Popen, call
     import glob
 
@@ -258,7 +257,7 @@ def did_I_hit(*args,**kwargs):
 
         steps = list(np.linspace(0,temp[0]/2.,4).astype(int)) # Add a few steps leading up to impact
         if len(contactstepsInside[0])>0: # Add last contact step inside cup
-            steps.append(contactstepsInside[0][-1])
+            steps.append(contactstepsInside[0][-1]-1)
 
         f = open('inp_plot.cfile', 'w')
         f.write('open d3plot "d3plot"\n')
@@ -359,7 +358,7 @@ def populate_runfiles(**kwargs):
     Uses separate functions to write each key word
 
     """
-    from .functions import include, controlTermination, termination_node, defineCurve, initialVelocity, loadBodyZ
+    from functions import include, controlTermination, termination_node, defineCurve, initialVelocity, loadBodyZ
 
 
 
@@ -390,7 +389,7 @@ def populate_runfiles(**kwargs):
 
         fo = open(outfile, 'w')
         fo.writelines(orglines)
-        fo.writelines(LSw.title(outfile.replace('.key','').replace('_', ' ')))
+        fo.writelines(title(outfile.replace('.key','').replace('_', ' ')))
         for k,v in populate.items():
 
             tempdict = {}
@@ -402,11 +401,16 @@ def populate_runfiles(**kwargs):
                         tempdict[kk] = vv[j]
                 else:
                     tempdict[kk] = vv
-            fo.writelines(LSw.__dict__.get(k)(**tempdict))
+            possibles = globals().copy()
+            possibles.update(locals())
+            method = possibles.get(k)
+            fo.writelines(method(**tempdict))
         fo.write('*END\n')
         fo.close()
 
     return outfiles
+
+
 
 
 """Functions to write input cards to LS-DYNA"""
@@ -432,6 +436,10 @@ def termination_node(nID, stop, maxc,minc):
     for n, s, ma, mi in zip(nID, stop, maxc, minc):
         lines.append(f' {n:d}, {s:d}, {ma:.4g}, {mi:.4g}\n')
     return lines
+
+def title(name):
+    """ Write title keyword"""
+    return [f'*TITLE\n{name:s}\n']
 
 def controlTermination(endtime):
     lines = ['*CONTROL_TERMINATION\n']

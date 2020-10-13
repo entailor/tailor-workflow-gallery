@@ -4,11 +4,16 @@ from pytailor import PythonTask, BranchTask, DAG, Workflow, Project, FileSet, Fi
 from functions import populate_runfiles, rundyna, did_I_hit, makeplot
 from makereport import make_report_from_beerpong_simulation
 
-vel = 3.1 # Velocity in m/s
-# angles = np.linspace(51,70,3); endtime = 2.00
+# vel = 5.0 # Velocity in m/s
+# angles = np.linspace(65,85,6); endtime = 2.00
 # angles = [50]; endtime = 0.02
 
-angles = [24, 25, 57, 58, 59]; endtime = 2.02
+
+vels = [3.1] * 8 + [5.0]*4
+angles = [15, 24, 25, 40, 57, 58, 59, 70] + [60, 68, 75, 81]
+endtime = 3.02
+
+
 
 
 
@@ -26,9 +31,9 @@ wf_inputs = {
                                  'minc': [[-1.2, -.2, -0.05]],
                                  },
             'initialVelocity': {'nsID': 1,
-                                'vx': [np.round(vel*np.cos(np.radians(angle)), 4) for angle in angles],
+                                'vx': [np.round(vel*np.cos(np.radians(angle)), 4) for vel, angle in zip(vels,angles)],
                                 'vy': 0.,
-                                'vz': [np.round(vel*np.sin(np.radians(angle)), 4) for angle in angles],
+                                'vz': [np.round(vel*np.sin(np.radians(angle)), 4) for vel, angle in zip(vels,angles)],
                                 },
             'loadBodyZ': {'lcID': 1,
                           'sf': 1.0,
@@ -39,7 +44,7 @@ wf_inputs = {
                             'o1': [[9.81, 9.81]],
                             },
         },
-        'misc': {'angles': list(angles), 'speed': vel},
+        'misc': {'angles': list(angles), 'speed': list(vels)},
     },
     'rundyna': {
         'runparams': {# All parameters required to run LS-DYNA in the appropriate manner
@@ -86,8 +91,7 @@ with DAG(name="dag") as dag:
                 download=[files.LSDYNA_inputfiles,
                           files.LSDYNA_runfiles,
                           files.LSDYNA_outputfiles,
-                          files.functions,
-                          files.cfile],
+                          files.functions],
                 upload={files.LSDYNA_postfiles: ['*.png']},
                 output_extraction={outputs.timehist: "<% $[0] %>", outputs.trigger: "<% $[1] %>"},
                 use_storage_dirs=False,
@@ -105,13 +109,12 @@ with DAG(name="dag") as dag:
     )
 
 
-prj = Project.from_name('Test')
+prj = Project.from_name('Prod')
 
 # create a fileset and upload files
 fileset = FileSet(prj)
 fileset.upload(LSDYNA_inputfiles=glob.glob('files/*.k*'),
-               functions=glob.glob('files/*.py'),
-               cfile=glob.glob('files/*.cfile') )
+               functions=glob.glob('func*.py') )
 
 # create a workflow:
 wf = Workflow(project=prj, dag=dag, fileset=fileset, name='runDyna', inputs=wf_inputs)
