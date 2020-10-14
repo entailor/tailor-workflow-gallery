@@ -41,8 +41,8 @@ def make_summary_content(wf):
 
 
 def make_results_content(wf):
-    # fileset = wf.fileset  # New syntax soon to be implemented
-    fileset = FileSet.from_workflow(wf)
+    fileset = wf.fileset  # New syntax soon to be implemented
+    # fileset = FileSet.from_workflow(wf)
     input_parameters = wf.inputs['populate_dyna']['misc']
     tag = 'LSDYNA_postfiles'
     # sort postfiles by branch
@@ -76,8 +76,8 @@ def make_results_content(wf):
 
 
 def make_report_from_beerpong_simulation(wf):
-    # fileset = wf.fileset  # New syntax soon to be implemented
-    fileset = FileSet.from_workflow(wf)
+    fileset = wf.fileset  # New syntax soon to be implemented
+    # fileset = FileSet.from_workflow(wf)
     fileset.download(tags=['LSDYNA_postfiles', 'allTrajectories'])
 
     # setting up the document
@@ -110,9 +110,6 @@ def make_report_from_beerpong_simulation(wf):
 
 
 prj = Project.from_name("Prod")
-workflow = Workflow.from_project_and_id(prj, 6)
-workflow.inputs
-workflow.fileset
-workflow.outputs
+workflow = Workflow.from_project_and_id(prj, 29)
 make_report_from_beerpong_simulation(workflow)
 #
