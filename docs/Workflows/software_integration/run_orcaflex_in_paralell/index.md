@@ -1,8 +1,5 @@
 # Run Orcaflex Simulations in Paralell
 
-This workflow uses Tailor automation and collaboration platform. 
-See [tailor.wf](https://tailor.wf) for more information.
-
 To run the workflow, pytailor (pip installable), orcapack (pip installable) 
 and OrcFxAPI with a valid license are prerequisites.
 
