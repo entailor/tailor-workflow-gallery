@@ -1,6 +1,8 @@
 site_name: Tailor Workflow Gallery
 nav:
-  - index.md
+  - Workflows:
+      - Software Integration:
+           -  Workflows/software_integration/run_orcaflex_in_paralell/index.md
 
 theme:
   name: material
