@@ -1,0 +1,18 @@
+site_name: Tailor Workflow Gallery
+nav:
+  - index.md
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+markdown_extensions:
+  - admonition
+#  - codehilite
+  - pymdownx.superfences
+  - pymdownx.details
+  - mkautodoc
+  - pymdownx.highlight:
+      use_pygments: true
+  - attr_list
+repo_url: https://github.com/entailor/tailor-workflow-gallery/
