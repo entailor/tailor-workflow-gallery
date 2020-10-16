@@ -1,4 +1,5 @@
-from pytailor import PythonTask, BranchTask, DAG, Inputs, Outputs, Files, Project, FileSet, Workflow
+from pytailor import PythonTask, BranchTask, DAG, Inputs, Outputs, Files, Project, \
+    FileSet, Workflow
 import orcapack
 
 inputs = Inputs()
@@ -17,7 +18,7 @@ with DAG(name="Advanced orcaflex simulation dag") as dag:
     with BranchTask(name="Parallel simulations",
                     branch_files=["inp_file"], parents=[t1]) as branch:
         with DAG(name="sub-dag for branching") as sub_dag:
-            sim_core = PythonTask(
+            run_simulation = PythonTask(
                 name="Simulation",
                 function=orcapack.run.run_simulation,
                 args=files.inp_file,
@@ -28,16 +29,16 @@ with DAG(name="Advanced orcaflex simulation dag") as dag:
             extract_results = PythonTask(
                 name="Data extraction",
                 function=orcapack.res2hdf5.sim2hdf5,
-                args=[files.sim_file, inputs.extract_data],
+                args=[files.sim_file[0], inputs.extract_data],
                 download=files.sim_file,
                 upload={files.h5_file: "*.h5"},
-                parents=sim_core
+                parents=run_simulation
             )
 
 ### run workflow ###
 
 # open a project
-prj = Project.from_name("Test")
+prj = Project.from_name("Demo")
 
 # define inputs
 workflow_inputs = {
@@ -83,7 +84,7 @@ wf = Workflow(project=prj,
               fileset=fileset)
 
 # run the workflow
-wf.run(distributed=True, worker_name='bernt')
+wf.run(distributed=True)
 
 # optional: download h5 files when workflow is finished
 
